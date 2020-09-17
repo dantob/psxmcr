@@ -5,10 +5,11 @@
 #include <stdint.h>
 
 uint8_t MCSAVE[8192];
-uint16_t POS = 0X0000;
+uint16_t POS = 0x0000;
 uint16_t BASEPOS = 0x0000;
 uint8_t FRAME = 0x00;
 uint8_t ICONS = 0x00;
+uint8_t MCS_CHECKSUM = 0x00;
 
 char *SAVEFILE;
 
@@ -103,10 +104,20 @@ int main(int argc, char *argv[])
 				printf("!%02X!", MCSAVE[POS]);
 		}
 		printf("\n");
-		printf("[0x%04X] XOR Checksum: 0x%02X\n", POS, MCSAVE[POS]);
+		printf("[0x%04X] XOR Checksum: 0x%02X (", POS, MCSAVE[POS]);
 		POS ++;
 		BASEPOS = 128;
 	}
+
+	//calculate mcs xor checksum
+	POS = 0x0000;
+	for (; POS < 128; POS ++) {
+		MCS_CHECKSUM ^= POS;
+	}
+	if (MCS_CHECKSUM == 0x00)
+		printf("Passed check)\n");
+	else
+		printf("Failed check)\n");
 
 	FRAME ++;
 
