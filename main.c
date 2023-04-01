@@ -64,11 +64,11 @@ int main(int argc, char *argv[])
     fseek(file, 0, SEEK_END);
 
     if (ftell(file) == RAW_SAVE) {
-        printf("PSX raw save (%ld bytes)\n", ftell(file));
+        printf("PSX RAW save (%ld bytes)\n", ftell(file));
         TYPE = TYPE_RAW;
     }
     else if (ftell(file) == MCS_SAVE) {
-        printf("PSX mcs save (%ld bytes)\n", ftell(file));
+        printf("PSX MCS/MCR save (%ld bytes)\n", ftell(file));
         TYPE = TYPE_MCR;
     }
     else {
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 
     /* copy file into buffer */
     if (fread(MCSAVE, 1, 8192, file) == 0) {
-        printf("Error: Mapping failed (%s: %s)\n", file, strerror(errno));
+        printf("Error: Mapping failed (%s: %s)\n", SAVEFILE, strerror(errno));
         fclose(file); /* release file */
         exit(EXIT_FAILURE);
     }
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
         print_frame_header();
         printf("[0x%04X] MCS Header: %c\n", POS, MCSAVE[POS]);
         POS += 4;
-        printf("[0x%04X] Blocks: 0x%02X%02X%02X\n", POS, MCSAVE[POS], MCSAVE[POS + 1], MCSAVE[POS + 2], MCSAVE[POS + 3]);
+        printf("[0x%04X] Blocks: 0x%02X%02X%02X%02X\n", POS, MCSAVE[POS], MCSAVE[POS + 1], MCSAVE[POS + 2], MCSAVE[POS + 3]);
         POS += 4;
         printf("[0x%04X] Link: 0x%02X%02X\n", POS, MCSAVE[POS], MCSAVE[POS + 1]);
         POS += 2;
@@ -122,18 +122,18 @@ int main(int argc, char *argv[])
         printf("[0x%04X] XOR Checksum: 0x%02X (", POS, MCSAVE[POS]);
         POS ++;
         BASEPOS = 128;
-    }
 
-    //calculate mcs xor checksum
-    POS = 0x0000;
-    for (; POS < 128; POS ++) {
-        MCS_CHECKSUM ^= POS;
-    }
-    if (MCS_CHECKSUM == 0x00) {
-        printf("Passed check\n");
-    }
-    else {
-        printf("Failed check\n");
+        //calculate mcs xor checksum
+        POS = 0x0000;
+        for (; POS < 128; POS ++) {
+            MCS_CHECKSUM ^= POS;
+        }
+        if (MCS_CHECKSUM == 0x00) {
+            printf("Passed check)\n");
+        }
+        else {
+            printf("Failed check)\n");
+        }
     }
 
     FRAME ++;
@@ -171,7 +171,6 @@ int main(int argc, char *argv[])
     POS ++;
 
     printf("[0x%04X] Title: ", POS); //16 bit values
-    uint8_t k = 0;
     for (; POS < (BASEPOS + 68); POS ++) {
         switch (MCSAVE[POS]) {
         case 0x00: //skip null
