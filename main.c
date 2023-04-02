@@ -33,7 +33,7 @@ void print_copyright(void)
     printf("------------------------------------------------------------\n\n");
 }
 
-void print_frame_header()
+void print_frame_header(void)
 {
     printf("\n[0x%04X] Frame: %d\n", POS, FRAME);
     printf("------------------------------------------------------------\n");
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
         }
         printf("\n");
         printf("[0x%04X] XOR Checksum: 0x%02X (", POS, MCSAVE[POS]);
-        POS ++;
+        //POS ++;
         BASEPOS = 128;
 
         //calculate mcs xor checksum
@@ -257,26 +257,25 @@ int main(int argc, char *argv[])
     FRAME ++;
     printf("\n");
 
-
     for (uint8_t i = 0; i < ICONS; i++) {
         print_frame_header();
         printf("Icon Data: (HEX) \n");
         uint16_t tmpPOS = POS;
-        for (uint8_t i = 0; POS < (tmpPOS + 128); POS ++) {
+        for (uint8_t i2 = 0; POS < (tmpPOS + 128); POS ++) {
             //printf("(%d) ", POS);
-            i ++;
+            i2 ++;
             printf("%01X %01X ", MCSAVE[POS] & 0x0F, (MCSAVE[POS] >> 4) & 0x0F);
-            if (i == 8) {
+            if (i2 == 8) {
                 printf("\n");
-                i = 0;
+                i2 = 0;
             }
         }
         FRAME ++;
-        tmpPOS += 128;
+        //tmpPOS += 128;
     }
 
-    uint16_t END_FRAME;
     for (; FRAME <= 64; FRAME ++) {
+        uint16_t END_FRAME;
         END_FRAME = POS + 128;
         print_frame_header();
         printf("Save Data: (HEX) \n");
