@@ -64,3 +64,8 @@ $(PROGNAME)32.msys.exe: $(SRC)
 clean:
 	rm -vf $(PROGNAME)*
 
+cppcheck:
+	cppcheck --template=gcc --std=c11 --force --error-exitcode=-1 --enable=all $(SRCDIR)/*.c
+	#git runner doesn't support disable yet
+	#cppcheck --template=gcc --std=c11 --force --error-exitcode=-1 --enable=all --disable=missingInclude $(SRCDIR)/*
+

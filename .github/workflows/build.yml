@@ -1,0 +1,125 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-linux-gcc:
+    name: build linux binaries with gcc
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: checkout the source
+      uses: actions/checkout@v3
+
+    - name: update host system
+      run:   |
+          sudo apt update
+          sudo apt install gcc-11-multilib
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100 --slave /usr/bin/g++ g++ /usr/bin/g++-11
+
+    - name: identify compiler
+      run: cc -v
+
+    - name: build linux 64bit debug binary
+      run: make
+
+    - name: build linux 64bit binary
+      run: make lin
+
+    - name: build linux 32bit binary
+      run: make lin32
+
+
+  build-linux-clang:
+    name: build linux binaries with clang
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: checkout the source
+      uses: actions/checkout@v3
+
+    - name: update host system
+      run:   |
+          sudo apt update
+          sudo apt install clang-15 libc6-dev-i386
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-15 100 --slave /usr/bin/g++ g++ /usr/bin/clang-15
+
+    - name: identify compiler
+      run: cc -v
+
+    - name: build linux 64bit debug binary
+      run: make
+
+    - name: build linux 64bit binary
+      run: make lin
+
+    - name: build linux 32bit binary
+      run: make lin32
+
+
+  build-windows-mingw-on-linux:
+    name: build windows mingw binaries on linux host
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: checkout the source
+      uses: actions/checkout@v3
+
+    - name: update host system
+      run:   |
+          sudo apt update
+          sudo apt install gcc-mingw-w64 gcc-mingw-w64-i686
+
+    - name: identify compiler
+      run:    |
+          x86_64-w64-mingw32-gcc -v
+          i686-w64-mingw32-gcc -v
+
+    - name: build mingw 64bit binary
+      run: make mingw-win
+
+    - name: build mingw 32bit binary
+      run: make mingw-win32
+
+
+  build-windows-native:
+    name: build windows binaries
+    runs-on: windows-latest
+
+    steps:
+    - name: setup msys2
+      uses: msys2/setup-msys2@v2
+
+    - name: checkout
+      uses: actions/checkout@v3
+
+    - name: identify compiler
+      run: gcc -v
+
+    - name: build windows 64bit binary
+      run: make win
+
+
+  cppcheck:
+    name: run cppcheck
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: checkout the source
+      uses: actions/checkout@v3
+
+    - name: update host system
+      run:   |
+          sudo apt update
+          sudo apt install cppcheck
+    
+    - name: identify version
+      run: cppcheck --version
+
+    - name: run cppcheck
+      run: make cppcheck
+
