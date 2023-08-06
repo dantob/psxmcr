@@ -1,10 +1,11 @@
-name: Build
+name: Build, test & release
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches: [ main ]
+  schedule:
+    - cron:  '0 12 * * 5' # build weekly on a friday
+  workflow_dispatch:
 
 jobs:
   build-linux-gcc:
@@ -12,8 +13,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - name: checkout the source
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
     - name: update host system
       run:   |
@@ -33,14 +33,23 @@ jobs:
     - name: build linux 32bit binary
       run: make lin32
 
+    - uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        artifacts: "*.bin"
+        commit: main
+        name: autorelease
+        makeLatest: true
+        tag: autorelease
+        token: ${{ secrets.GITHUB_TOKEN }}
+        body: "Automatically released by github actions"
 
   build-linux-clang:
     name: build linux binaries with clang
     runs-on: ubuntu-22.04
 
     steps:
-    - name: checkout the source
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
     - name: update host system
       run:   |
@@ -66,8 +75,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - name: checkout the source
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
     - name: update host system
       run:   |
@@ -85,17 +93,24 @@ jobs:
     - name: build mingw 32bit binary
       run: make mingw-win32
 
+    - uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        artifacts: "*.exe"
+        commit: main
+        name: autorelease
+        makeLatest: true
+        tag: autorelease
+        token: ${{ secrets.GITHUB_TOKEN }}
+        body: "Automatically released by github actions"
 
   build-windows-native:
     name: build windows binaries
     runs-on: windows-latest
 
     steps:
-    - name: setup msys2
-      uses: msys2/setup-msys2@v2
-
-    - name: checkout
-      uses: actions/checkout@v3
+    - uses: msys2/setup-msys2@v2
+    - uses: actions/checkout@v3
 
     - name: identify compiler
       run: gcc -v
@@ -109,17 +124,15 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - name: checkout the source
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
     - name: update host system
       run:   |
           sudo apt update
           sudo apt install cppcheck
     
-    - name: identify version
+    - name: identify cppcheck
       run: cppcheck --version
 
     - name: run cppcheck
       run: make cppcheck
-

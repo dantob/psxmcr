@@ -4,14 +4,14 @@ PROGNAME     = psxmcr
 CCWIN        = /usr/bin/x86_64-w64-mingw32-gcc
 CCWIN32      = /usr/bin/i686-w64-mingw32-gcc
 
-CFLAGS       = -std=c11 -pipe -fno-plt -D_FORTIFY_SOURCE=2
+CFLAGS       = -std=c11 -pipe -fno-plt
 CFLAGS64     = -m64 -march=x86-64 -mtune=generic
 CFLAGS32     = -m32 -march=i386 -mtune=generic
 WARNINGS     = -Wpedantic -Wall -Wextra -Wformat -Wpointer-arith -Wshadow -Wstrict-prototypes -Wformat-security
 HIDE         = -Wno-conversion
 DEBUG        = -Og -g3 -fno-omit-frame-pointer -DDEBUG
-OPTIMIZE     = -O2 -g3 -fno-omit-frame-pointer -flto -fstack-clash-protection -Wl,-z,relro,-z,now
-OPTIMIZE_WIN = -O2 -g3 -fno-omit-frame-pointer -flto -fstack-clash-protection -static
+OPTIMIZE     = -O2 -g3 -fno-omit-frame-pointer -flto -fstack-clash-protection -D_FORTIFY_SOURCE=2 -Wl,-z,relro,-z,now
+OPTIMIZE_WIN = -O2 -g3 -fno-omit-frame-pointer -flto -fstack-clash-protection -D_FORTIFY_SOURCE=0 -static
 
 SRCDIR=./
 SRC=$(SRCDIR)/*.c
