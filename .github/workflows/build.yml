@@ -18,8 +18,8 @@ jobs:
     - name: update host system
       run:   |
           sudo apt update
-          sudo apt install gcc-11-multilib
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100 --slave /usr/bin/g++ g++ /usr/bin/g++-11
+          sudo apt install gcc-12-multilib
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100 --slave /usr/bin/g++ g++ /usr/bin/g++-12
 
     - name: identify compiler
       run: cc -v
@@ -55,7 +55,15 @@ jobs:
       run:   |
           sudo apt update
           sudo apt install clang-15 libc6-dev-i386
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-15 100 --slave /usr/bin/g++ g++ /usr/bin/clang-15
+#         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-15 100 --slave /usr/bin/g++ g++ /usr/bin/clang-15
+
+    # temp fix until clang 16 is available in ubuntu lts
+    - name: install clang 16
+      run:   |
+          wget https://apt.llvm.org/llvm.sh
+          chmod u+x llvm.sh
+          sudo ./llvm.sh 16
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-16 100 --slave /usr/bin/g++ g++ /usr/bin/clang-16
 
     - name: identify compiler
       run: cc -v

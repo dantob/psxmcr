@@ -4,14 +4,20 @@ PROGNAME     = psxmcr
 CCWIN        = /usr/bin/x86_64-w64-mingw32-gcc
 CCWIN32      = /usr/bin/i686-w64-mingw32-gcc
 
-CFLAGS       = -std=c11 -pipe -fno-plt
+CFLAGS       = -std=c2x -pipe -fno-plt -g3 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer
 CFLAGS64     = -m64 -march=x86-64 -mtune=generic
 CFLAGS32     = -m32 -march=i386 -mtune=generic
-WARNINGS     = -Wpedantic -Wall -Wextra -Wformat -Wpointer-arith -Wshadow -Wstrict-prototypes -Wformat-security
-HIDE         = -Wno-conversion
-DEBUG        = -Og -g3 -fno-omit-frame-pointer -DDEBUG
-OPTIMIZE     = -O2 -g3 -fno-omit-frame-pointer -flto -fstack-clash-protection -D_FORTIFY_SOURCE=2 -Wl,-z,relro,-z,now
-OPTIMIZE_WIN = -O2 -g3 -fno-omit-frame-pointer -flto -fstack-clash-protection -D_FORTIFY_SOURCE=0 -static
+
+DEBUG        = -Og -DDEBUG
+OPTIMIZE     = -O2 -flto -fstack-protector-strong -fstack-clash-protection -D_FORTIFY_SOURCE=2 -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now
+OPTIMIZE_WIN = -O2 -flto -fstack-protector-strong -fstack-clash-protection -D_FORTIFY_SOURCE=0 -static
+
+WARNINGS     = -Wpedantic -Wall -Wextra -Wformat -Wformat-security -Wpointer-arith -Wshadow -Wstrict-prototypes
+HIDE         = -Wno-conversion -Wno-gnu-binary-literal
+
+ASAN         = -fsanitize=address,undefined,leak
+COVERAGE     = -fprofile-arcs -ftest-coverage
+ANALYZE      = -fanalyzer
 
 SRCDIR=./
 SRC=$(SRCDIR)/*.c
@@ -66,6 +72,6 @@ clean:
 
 cppcheck:
 	cppcheck --template=gcc --std=c11 --force --error-exitcode=-1 --enable=all $(SRCDIR)/*.c
-	#git runner doesn't support disable yet
-	#cppcheck --template=gcc --std=c11 --force --error-exitcode=-1 --enable=all --disable=missingInclude $(SRCDIR)/*
+	#git runner doesn't support some options yet
+	#--check-level=exhaustive --disable=missingInclude
 
