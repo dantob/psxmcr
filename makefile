@@ -9,69 +9,70 @@ CFLAGS64     = -m64 -march=x86-64 -mtune=generic
 CFLAGS32     = -m32 -march=i386 -mtune=generic
 
 DEBUG        = -Og -DDEBUG
-OPTIMIZE     = -O2 -flto -fstack-protector-strong -fstack-clash-protection -D_FORTIFY_SOURCE=2 -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now
+OPTIMIZE     = -O2 -flto -fstack-protector-strong -fstack-clash-protection -D_FORTIFY_SOURCE=2 -fPIE -pie -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now
 OPTIMIZE_WIN = -O2 -flto -fstack-protector-strong -fstack-clash-protection -D_FORTIFY_SOURCE=0 -static
 
-WARNINGS     = -Wpedantic -Wall -Wextra -Wformat -Wformat-security -Wpointer-arith -Wshadow -Wstrict-prototypes
-HIDE         = -Wno-conversion -Wno-gnu-binary-literal
+WARNINGS     = -Wpedantic -Wall -Wextra -Wformat=2 -Wconversion -Wpointer-arith -Wshadow -Wstrict-prototypes
+HIDE         = -Wno-conversion -Wno-gnu-binary-literal #clang17 should fix this
 
-ASAN         = -fsanitize=address,undefined,leak
+ASAN         = -fsanitize=address,undefined
 COVERAGE     = -fprofile-arcs -ftest-coverage
 ANALYZE      = -fanalyzer
 
-SRCDIR=./
-SRC=$(SRCDIR)/*.c
-HEADERS=$(SRCDIR)/*.h
+SRCDIR       = ./
+VERSION      = alpha
+SRC          = $(SRCDIR)/*.c
+HEADERS      = $(SRCDIR)/*.h
 
-all: $(PROGNAME).Og
+all: $(PROGNAME)_$(VERSION).Og
 
-lin: $(PROGNAME).bin
-lin32: $(PROGNAME)32.bin
+release: all linux linux32 windows windows32
+
+linux:   $(PROGNAME)_$(VERSION).bin
+linux32: $(PROGNAME)32_$(VERSION).bin
 
 #linux host
-mingw-win: $(PROGNAME).exe
-mingw-win32: $(PROGNAME)32.exe
+windows:   $(PROGNAME)_$(VERSION).exe
+windows32: $(PROGNAME)32_$(VERSION).exe
 
 #windows host
-win: $(PROGNAME).msys.exe
-win32: $(PROGNAME)32.msys.exe
+windows-msys:   $(PROGNAME)_$(VERSION).msys.exe
+windows32-msys: $(PROGNAME)32_$(VERSION).msys.exe
 
-$(PROGNAME).Og: $(SRC)
-	$(CC) -o $@ $^ $(CFLAGS) $(CFLAGS64) $(WARNINGS) $(HIDE) $(DEBUG) -Werror
+$(PROGNAME)_$(VERSION).Og: $(SRC)
+	$(CC) -o $@ $^ $(CFLAGS) $(CFLAGS64) $(WARNINGS) $(HIDE) $(DEBUG) $(ASAN) -Werror
+	objcopy --compress-debug-sections $@
 
-$(PROGNAME).bin: $(SRC)
+$(PROGNAME)_$(VERSION).bin: $(SRC)
 	$(CC) -o $@ $^ $(CFLAGS) $(CFLAGS64) $(WARNINGS) $(HIDE) $(OPTIMIZE)
-	objcopy --only-keep-debug $@ $@.debug
-	objcopy --strip-unneeded $@
-	objcopy --add-gnu-debuglink=$@.debug $@
+	objcopy --only-keep-debug --compress-debug-sections $@ $@.debug
+	objcopy --strip-unneeded --remove-section=.comment --add-gnu-debuglink=$@.debug $@
 
-$(PROGNAME)32.bin: $(SRC)
+$(PROGNAME)32_$(VERSION).bin: $(SRC)
 	$(CC) -o $@ $^ $(CFLAGS) $(CFLAGS32) $(WARNINGS) $(HIDE) $(OPTIMIZE)
-	objcopy --only-keep-debug $@ $@.debug
-	objcopy --strip-unneeded $@
-	objcopy --add-gnu-debuglink=$@.debug $@
+	objcopy --only-keep-debug --compress-debug-sections $@ $@.debug
+	objcopy --strip-unneeded --remove-section=.comment --add-gnu-debuglink=$@.debug $@
 
-$(PROGNAME).exe: $(SRC)
+$(PROGNAME)_$(VERSION).exe: $(SRC)
 	$(CCWIN) -o $@ $^ $(CFLAGS) $(CFLAGS64) $(WARNINGS) $(HIDE) $(OPTIMIZE_WIN)
-	objcopy --strip-unneeded $@
+	objcopy --strip-unneeded --remove-section=.comment $@
 
-$(PROGNAME)32.exe: $(SRC)
+$(PROGNAME)32_$(VERSION).exe: $(SRC)
 	$(CCWIN32) -o $@ $^ $(CFLAGS) $(CFLAGS32) $(WARNINGS) $(HIDE) $(OPTIMIZE_WIN)
-	objcopy --strip-unneeded $@
+	objcopy --strip-unneeded --remove-section=.comment $@
 
-$(PROGNAME).msys.exe: $(SRC)
+$(PROGNAME)_$(VERSION).msys.exe: $(SRC)
 	gcc -o $@ $^ $(CFLAGS) $(CFLAGS64) $(WARNINGS) $(HIDE) $(OPTIMIZE_WIN)
-	objcopy --strip-unneeded $@
+	objcopy --strip-unneeded --remove-section=.comment $@
 
-$(PROGNAME)32.msys.exe: $(SRC)
+$(PROGNAME)32_$(VERSION).msys.exe: $(SRC)
 	gcc -o $@ $^ $(CFLAGS) $(CFLAGS32) $(WARNINGS) $(HIDE) $(OPTIMIZE_WIN)
-	objcopy --strip-unneeded $@
-
+	objcopy --strip-unneeded --remove-section=.comment $@
 clean:
-	rm -vf $(PROGNAME)*
+	rm -vf $(PROGNAME)* *.gcno
 
 cppcheck:
 	cppcheck --template=gcc --std=c11 --force --error-exitcode=-1 --enable=all $(SRCDIR)/*.c
 	#git runner doesn't support some options yet
-	#--check-level=exhaustive --disable=missingInclude
+	#--disable=missingInclude --check-level=exhaustive
 

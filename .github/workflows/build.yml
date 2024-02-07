@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: update host system
       run:   |
@@ -28,10 +28,10 @@ jobs:
       run: make
 
     - name: build linux 64bit binary
-      run: make lin
+      run: make linux
 
     - name: build linux 32bit binary
-      run: make lin32
+      run: make linux32
 
     - uses: ncipollo/release-action@v1
       with:
@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: update host system
       run:   |
@@ -72,18 +72,18 @@ jobs:
       run: make
 
     - name: build linux 64bit binary
-      run: make lin
+      run: make linux
 
     - name: build linux 32bit binary
-      run: make lin32
+      run: make linux32
 
 
-  build-windows-mingw-on-linux:
-    name: build windows mingw binaries on linux host
+  build-windows-on-linux:
+    name: build windows binaries on linux host
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: update host system
       run:   |
@@ -96,10 +96,10 @@ jobs:
           i686-w64-mingw32-gcc -v
 
     - name: build mingw 64bit binary
-      run: make mingw-win
+      run: make windows
 
     - name: build mingw 32bit binary
-      run: make mingw-win32
+      run: make windows32
 
     - uses: ncipollo/release-action@v1
       with:
@@ -118,13 +118,13 @@ jobs:
 
     steps:
     - uses: msys2/setup-msys2@v2
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: identify compiler
       run: gcc -v
 
     - name: build windows 64bit binary
-      run: make win
+      run: make windows-msys
 
 
   cppcheck:
@@ -132,7 +132,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: update host system
       run:   |
