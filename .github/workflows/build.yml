@@ -10,7 +10,7 @@ on:
 jobs:
   build-linux-gcc:
     name: build linux binaries with gcc
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v4
@@ -18,8 +18,9 @@ jobs:
     - name: update host system
       run:   |
           sudo apt update
-          sudo apt install gcc-12-multilib
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100 --slave /usr/bin/g++ g++ /usr/bin/g++-12
+          sudo apt install gcc-14-multilib
+          sudo update-alternatives --install /usr/bin/cc   cc   /usr/bin/gcc-14 100
+          sudo update-alternatives --install /usr/bin/c++  c++  /usr/bin/g++-14 100
 
     - name: identify compiler
       run: cc -v
@@ -46,7 +47,7 @@ jobs:
 
   build-linux-clang:
     name: build linux binaries with clang
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v4
@@ -54,16 +55,19 @@ jobs:
     - name: update host system
       run:   |
           sudo apt update
-          sudo apt install clang-15 libc6-dev-i386
-#         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-15 100 --slave /usr/bin/g++ g++ /usr/bin/clang-15
+          sudo apt install libc6-dev-i386
+          sudo apt install clang-18
+          sudo update-alternatives --install /usr/bin/cc  cc  /usr/bin/clang-18 100
+          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang-18 100
 
-    # temp fix until clang 16 is available in ubuntu lts
-    - name: install clang 16
-      run:   |
-          wget https://apt.llvm.org/llvm.sh
-          chmod u+x llvm.sh
-          sudo ./llvm.sh 16
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-16 100 --slave /usr/bin/g++ g++ /usr/bin/clang-16
+    # temp fix until newer clang is available in ubuntu lts
+    #- name: install clang 17
+    #  run:   |
+    #      wget https://apt.llvm.org/llvm.sh
+    #      chmod u+x llvm.sh
+    #      sudo ./llvm.sh 18
+    #      sudo update-alternatives --install /usr/bin/cc  cc  /usr/bin/clang-18 100
+    #      sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang-18 100
 
     - name: identify compiler
       run: cc -v
@@ -77,10 +81,9 @@ jobs:
     - name: build linux 32bit binary
       run: make linux32
 
-
   build-windows-on-linux:
     name: build windows binaries on linux host
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v4
@@ -126,10 +129,9 @@ jobs:
     - name: build windows 64bit binary
       run: make windows-msys
 
-
   cppcheck:
     name: run cppcheck
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v4
@@ -138,9 +140,27 @@ jobs:
       run:   |
           sudo apt update
           sudo apt install cppcheck
-    
+
     - name: identify cppcheck
       run: cppcheck --version
 
     - name: run cppcheck
       run: make cppcheck
+
+  codespell:
+    name: run codespell
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: install codespell
+      run:   |
+          sudo apt update
+          sudo apt install codespell
+
+    - name: identify codespell
+      run: codespell --version
+
+    - name: run codespell
+      run: make codespell

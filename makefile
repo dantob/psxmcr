@@ -8,12 +8,12 @@ CFLAGS       = -std=c2x -pipe -fno-plt -g3 -fno-omit-frame-pointer -mno-omit-lea
 CFLAGS64     = -m64 -march=x86-64 -mtune=generic
 CFLAGS32     = -m32 -march=i386 -mtune=generic
 
-DEBUG        = -Og -DDEBUG
-OPTIMIZE     = -O2 -flto -fstack-protector-strong -fstack-clash-protection -D_FORTIFY_SOURCE=2 -fPIE -pie -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now
-OPTIMIZE_WIN = -O2 -flto -fstack-protector-strong -fstack-clash-protection -D_FORTIFY_SOURCE=0 -static
+DEBUG        = -Og -DDEBUG #-Wl,--enable-linker-version
+OPTIMIZE     = -O2 -flto -fstack-protector-strong -fstack-clash-protection -D_FORTIFY_SOURCE=2 -fPIE -pie -Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,relro -Wl,-z,now -Wl,-z,pack-relative-relocs #-Wl,--enable-linker-version
+OPTIMIZE_WIN = -O2 -flto -fstack-protector-strong -fstack-clash-protection -static
 
-WARNINGS     = -Wpedantic -Wall -Wextra -Wformat=2 -Wconversion -Wpointer-arith -Wshadow -Wstrict-prototypes
-HIDE         = -Wno-conversion -Wno-gnu-binary-literal #clang17 should fix this
+WARNINGS     = -Wpedantic -Wall -Wextra -Wformat=2 -Wconversion -Wpointer-arith -Wshadow -Wundef -Wdouble-promotion -Wstrict-prototypes -Wold-style-definition
+HIDE         = -Wno-conversion -Wno-gnu-binary-literal #clang
 
 ASAN         = -fsanitize=address,undefined
 COVERAGE     = -fprofile-arcs -ftest-coverage
@@ -72,7 +72,7 @@ clean:
 	rm -vf $(PROGNAME)* *.gcno
 
 cppcheck:
-	cppcheck --template=gcc --std=c11 --force --error-exitcode=-1 --enable=all $(SRCDIR)/*.c
-	#git runner doesn't support some options yet
-	#--disable=missingInclude --check-level=exhaustive
+	cppcheck --template=gcc --std=c11 --force --error-exitcode=-1 --enable=all --disable=missingInclude --check-level=exhaustive $(SRCDIR)/*.c
 
+codespell:
+	codespell --count --builtin clear,rare,informal,names
