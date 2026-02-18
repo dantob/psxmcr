@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: update host system
       run:   |
@@ -50,24 +50,15 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: update host system
       run:   |
           sudo apt update
           sudo apt install libc6-dev-i386
-          sudo apt install clang-18
-          sudo update-alternatives --install /usr/bin/cc  cc  /usr/bin/clang-18 100
-          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang-18 100
-
-    # temp fix until newer clang is available in ubuntu lts
-    #- name: install clang 17
-    #  run:   |
-    #      wget https://apt.llvm.org/llvm.sh
-    #      chmod u+x llvm.sh
-    #      sudo ./llvm.sh 18
-    #      sudo update-alternatives --install /usr/bin/cc  cc  /usr/bin/clang-18 100
-    #      sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang-18 100
+          sudo apt install clang-19
+          sudo update-alternatives --install /usr/bin/cc  cc  /usr/bin/clang-19 100
+          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-19 100
 
     - name: identify compiler
       run: cc -v
@@ -86,7 +77,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: update host system
       run:   |
@@ -134,7 +125,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: update host system
       run:   |
@@ -152,7 +143,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: install codespell
       run:   |
@@ -162,5 +153,6 @@ jobs:
     - name: identify codespell
       run: codespell --version
 
+    # If count >0 will trigger a workflow failure, else success
     - name: run codespell
       run: make codespell
