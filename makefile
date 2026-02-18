@@ -1,41 +1,52 @@
 # -----
-PROGNAME     = psxmcr
-VERSION      = alpha
-SRCDIR       = ./
+PROGNAME         = psxmcr
+VERSION          = alpha
+SRCDIR           = ./
 
 # -----
 # Default host compiler
-#CC          ?= /usr/bin/gcc
+#CC             ?= /usr/bin/gcc
 
 # Cross compilers
-CCWIN        ?= /usr/bin/x86_64-w64-mingw32-gcc
-CCWIN32      ?= /usr/bin/i686-w64-mingw32-gcc
+CCWIN           ?= /usr/bin/x86_64-w64-mingw32-gcc
+CCWIN32         ?= /usr/bin/i686-w64-mingw32-gcc
 # Other tools
-RM           = rm --force --verbose
-MKDIR_P      = mkdir --parents --verbose
-OBJCOPY      = objcopy
-CPPCHECK     = cppcheck
-ASTYLE       = astyle
-CODESPELL    = codespell
-CURL         = curl --silent --show-error
+RM               = rm --force --verbose
+MKDIR_P          = mkdir --parents --verbose
+OBJCOPY          = objcopy
+GCOVR            = gcovr
+CPPCHECK         = cppcheck
+ASTYLE           = astyle
+PAHOLE           = pahole
+CODESPELL        = codespell
+CURL             = curl --silent --show-error
 
-SRC          := $(wildcard $(SRCDIR)/*.c)
-HEADERS      := $(wildcard $(SRCDIR)/*.h)
+SRC             := $(wildcard $(SRCDIR)/*.c)
+HEADERS         := $(wildcard $(SRCDIR)/*.h)
 
 # -----
-CFLAGS_BASE  = -std=c2x -pipe -fno-plt -g3 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -fstrict-overflow -ftrapv
-CFLAGS_64    = -m64 -march=x86-64 -mtune=generic
-CFLAGS_32    = -m32 -march=i386 -mtune=generic
+CFLAGS_BASE      = -std=c2x -pipe -fno-plt -g3 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -fstrict-overflow -ftrapv
+CFLAGS_64        = -m64 -march=x86-64 -mtune=generic
+CFLAGS_32        = -m32 -march=i386 -mtune=generic
 
-CFLAGS_WARN  = -Wpedantic -Wall -Wextra -Wformat=2 -Wconversion -Wpointer-arith -Wshadow -Wundef -Wdouble-promotion -Wstrict-prototypes -Wold-style-definition
-CFLAGS_HIDE  = -Wno-conversion
+CFLAGS_WARN      = -Wpedantic -Wall -Wextra -Wformat=2 -Wconversion -Wpointer-arith -Wshadow -Wundef -Wdouble-promotion \
+                   -Wstrict-prototypes -Wold-style-definition
+CFLAGS_HIDE      = -Wno-conversion
 
-CFLAGS_DEBUG = -Og -DDEBUG
+CFLAGS_DEBUG     = -Og -DDEBUG
 
-OPTIMIZE     = -O2 -flto -fstack-protector-strong -fstack-clash-protection -D_FORTIFY_SOURCE=2 -fPIE -pie -Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,relro -Wl,-z,now -Wl,-z,pack-relative-relocs -Wl,--build-id -Wl,--enable-linker-version
-OPTIMIZE_WIN = -O2 -flto -fstack-protector-strong -fstack-clash-protection -static
+OPTIMIZE         = -O2 -flto -fstack-protector-strong -fstack-clash-protection -D_FORTIFY_SOURCE=2 -fPIE -pie \
+                   -Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,relro -Wl,-z,now -Wl,-z,pack-relative-relocs -Wl,--build-id \
+                   -Wl,--enable-linker-version
+OPTIMIZE_WIN     = -O2 -flto -fstack-protector-strong -fstack-clash-protection -static
 
-ASAN_FLAGS   = -fsanitize=address,undefined
+ASAN_FLAGS       = -fsanitize=address,undefined
+GCOVR_FLAGS      = -fprofile-arcs -ftest-coverage -fcondition-coverage
+ANALYZE          = -fanalyzer
+
+ASTYLE_FLAGS     = --style=linux --break-closing-braces --add-braces --indent-preproc-cond --align-pointer=name --pad-header \
+                   --pad-oper --indent=spaces=4 --convert-tabs --attach-return-type --indent-switches --pad-include \
+                   --squeeze-lines=1 --suffix=none --break-blocks --formatted
 
 # -----
 TARGET_LIN_DBG   = $(PROGNAME)_$(VERSION).Og
@@ -110,25 +121,40 @@ clean:
 	      src/*.pch
 	$(RM) -r ./.codespell
 
+# Coverage testing
+gcovr:
+	$(MKDIR_P) ./gcovr
+	$(GCOVR) --html-details --html-self-contained --html-title $(PROGNAME) \
+	         -o ./gcovr/summary.html --print-summary --verbose \
+	         --gcov-ignore-errors="all"
+
+clean_gcov:
+	$(RM) -r ./gcovr *.gcov *.gcda *.gcno
+
 # Static code analysis
 cppcheck:
-	$(CPPCHECK) --template=gcc --std=c2x --force --error-exitcode=-1 \
-	            --enable=all --disable=missingInclude --check-level=exhaustive \
+	$(CPPCHECK) --template=gcc --std=c2x --force --error-exitcode=-1 --enable=all --disable=missingInclude \
+	            --check-level=exhaustive \
 	            $(SRCDIR)/*.[ch]
 
 # Code formatting
 codeformat:
-	$(ASTYLE) --style=linux --break-closing-braces --add-braces \
-	          --indent-preproc-cond --formatted --align-pointer=name \
-	          --squeeze-lines=2 --suffix=none --pad-header --pad-oper \
-	          $(SRCDIR)/*.[ch]
+	$(ASTYLE) $(ASTYLE_FLAGS) $(SRCDIR)/*.[ch]
 
+checkformat:
+	$(ASTYLE) $(ASTYLE_FLAGS) --dry-run --error-on-changes $(SRCDIR)/*.[ch]
+
+# Structure layout analysis
+pahole: $(TARGET_LIN_DBG)
+	$(PAHOLE) --show_decl_info ./$(TARGET_LIN_DBG)
+
+# Spell checking
 codespell:
 	$(MKDIR_P) ./.codespell
 	$(CURL) --output-dir ./.codespell --remote-name https://raw.githubusercontent.com/codespell-project/codespell/master/codespell_lib/data/dictionary.txt
 	$(CURL) --output-dir ./.codespell --remote-name https://raw.githubusercontent.com/codespell-project/codespell/master/codespell_lib/data/dictionary_rare.txt
-	$(CODESPELL) --dictionary=./.codespell/dictionary.txt --dictionary=./.codespell/dictionary_rare.txt \
-	             --count --builtin clear,rare,informal,names \
+	$(CODESPELL) --dictionary=./.codespell/dictionary.txt --dictionary=./.codespell/dictionary_rare.txt --count \
+	             --builtin clear,rare,informal,names \
 	             --skip="./.*,./gcovr/*" \
 	             .
 

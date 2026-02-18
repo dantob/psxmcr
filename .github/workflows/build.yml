@@ -156,3 +156,27 @@ jobs:
     # If count >0 will trigger a workflow failure, else success
     - name: run codespell
       run: make codespell
+
+  astyle:
+    name: run astyle check
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v6
+
+    # Ubuntu has an ancient version of astyle, clone and build latest upstream release
+    - name: install astyle
+      run:   |
+          sudo apt install cmake
+          git clone https://gitlab.com/saalen/astyle.git
+          cd astyle
+          git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
+          cmake .
+          make
+          sudo make install
+
+    - name: identify astyle
+      run: astyle --version
+
+    - name: run astyle check
+      run: make checkformat

@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
 
     FILE *file;
     file = fopen(SAVEFILE, "rb");
+
     if (file == NULL) {
         printf("Couldn't open file: %s (%s)\n", SAVEFILE, strerror(errno));
         exit(EXIT_FAILURE);
@@ -100,16 +101,21 @@ int main(int argc, char *argv[])
         printf("[0x%04X] Region Code: %c%c\n", POS, MCSAVE[POS], MCSAVE[POS + 1]);
         POS += 2;
         printf("[0x%04X] Product Code: ", POS);
+
         for (; POS < 0x16; POS ++) {
             printf("%c", MCSAVE[POS]);
         }
+
         printf("\n");
         printf("[0x%04X] Identifier: ", POS);
+
         for (; POS < 0x1E; POS ++) {
             printf("%c", MCSAVE[POS]);
         }
+
         printf("\n");
         printf("[0x%04X] Padding: (should be 0x00) ", POS);
+
         for (; POS < 0x7F; POS ++) {
             if (MCSAVE[POS] == 0x00) {
                 //do nothing
@@ -118,6 +124,7 @@ int main(int argc, char *argv[])
                 printf("!%02X!", MCSAVE[POS]);
             }
         }
+
         printf("\n");
         printf("[0x%04X] XOR Checksum: 0x%02X (", POS, MCSAVE[POS]);
         //POS ++;
@@ -125,9 +132,11 @@ int main(int argc, char *argv[])
 
         //calculate mcs xor checksum
         POS = 0x0000;
+
         for (; POS < 128; POS ++) {
             MCS_CHECKSUM ^= POS;
         }
+
         if (MCS_CHECKSUM == 0x00) {
             printf("Passed check)\n");
         }
@@ -144,26 +153,32 @@ int main(int argc, char *argv[])
     POS += 2;
 
     printf("[0x%04X] Icon Type: ", POS);
+
     switch (MCSAVE[POS]) {
-    case 0x00:
-        printf("%d (no icon)\n", MCSAVE[POS]);
-        ICONS = 0;
-        break;
-    case 0x11:
-        printf("%d (static, one frame)\n", MCSAVE[POS]);
-        ICONS = 1;
-        break;
-    case 0x12:
-        printf("%d (animated, two frames)\n", MCSAVE[POS]);
-        ICONS = 2;
-        break;
-    case 0x13:
-        printf("%d (animated, three frames)\n", MCSAVE[POS]);
-        ICONS = 3;
-        break;
-    default:
-        break;
+        case 0x00:
+            printf("%d (no icon)\n", MCSAVE[POS]);
+            ICONS = 0;
+            break;
+
+        case 0x11:
+            printf("%d (static, one frame)\n", MCSAVE[POS]);
+            ICONS = 1;
+            break;
+
+        case 0x12:
+            printf("%d (animated, two frames)\n", MCSAVE[POS]);
+            ICONS = 2;
+            break;
+
+        case 0x13:
+            printf("%d (animated, three frames)\n", MCSAVE[POS]);
+            ICONS = 3;
+            break;
+
+        default:
+            break;
     }
+
     POS ++;
 
     printf("[0x%04X] Blocks Used: ", POS);
@@ -171,70 +186,79 @@ int main(int argc, char *argv[])
     POS ++;
 
     printf("[0x%04X] Title: ", POS); //16 bit values
+
     for (; POS < (BASEPOS + 68); POS ++) {
         switch (MCSAVE[POS]) {
-        case 0x00: //skip null
-        case 0x81: //fallthrough
-            POS ++; //skip we only need the lower byte for english
-            if (MCSAVE[POS] == 0x40) { //space
-                printf(" ");
-            }
-            else if (MCSAVE[POS] >= 0x69 && MCSAVE[POS] <= 0x6A) { // ( and )
-                printf("%c", MCSAVE[POS] - 0x41);
-            }
-            else if (MCSAVE[POS] == 0x5E) { // /
-                printf("%c", MCSAVE[POS] - 0x2F);
-            }
-            else if (MCSAVE[POS] == 0x93) { // %
-                printf("%c", MCSAVE[POS] - 0x6E);
-            }
-            else if (MCSAVE[POS] == 0x7C) { // -
-                printf("%c", MCSAVE[POS] - 0x4F);
-            }
-            else if (MCSAVE[POS] == 0x44) { // .
-                printf("%c", MCSAVE[POS] - 0x16);
-            }
-            else if (MCSAVE[POS] == 0x46) { // :
-                printf("%c", MCSAVE[POS] - 0x0C);
-            }
-            else if (MCSAVE[POS] == 0x66) { // '
-                printf("%c", MCSAVE[POS] - 0x3F);
-            }
-            else if (MCSAVE[POS] == 0x00) { // null
+            case 0x00: //skip null
+            case 0x81: //fallthrough
+                POS ++; //skip we only need the lower byte for english
+
+                if (MCSAVE[POS] == 0x40) { //space
+                    printf(" ");
+                }
+                else if (MCSAVE[POS] >= 0x69 && MCSAVE[POS] <= 0x6A) { // ( and )
+                    printf("%c", MCSAVE[POS] - 0x41);
+                }
+                else if (MCSAVE[POS] == 0x5E) { // /
+                    printf("%c", MCSAVE[POS] - 0x2F);
+                }
+                else if (MCSAVE[POS] == 0x93) { // %
+                    printf("%c", MCSAVE[POS] - 0x6E);
+                }
+                else if (MCSAVE[POS] == 0x7C) { // -
+                    printf("%c", MCSAVE[POS] - 0x4F);
+                }
+                else if (MCSAVE[POS] == 0x44) { // .
+                    printf("%c", MCSAVE[POS] - 0x16);
+                }
+                else if (MCSAVE[POS] == 0x46) { // :
+                    printf("%c", MCSAVE[POS] - 0x0C);
+                }
+                else if (MCSAVE[POS] == 0x66) { // '
+                    printf("%c", MCSAVE[POS] - 0x3F);
+                }
+                else if (MCSAVE[POS] == 0x00) { // null
+                    break;
+                }
+                else {
+                    printf("\n#BUG# Unknown char: 0x81 0x%02X", MCSAVE[POS]);
+                    break;
+                }
+
                 break;
-            }
-            else {
-                printf("\n#BUG# Unknown char: 0x81 0x%02X", MCSAVE[POS]);
+
+            case 0x82:
+                POS ++; //skip we only need the lower byte for english
+
+                if (MCSAVE[POS] >= 0x4F && MCSAVE[POS] <= 0x58) { //0 - 9
+                    printf("%c", MCSAVE[POS] - 0x1F);
+                }
+                else if (MCSAVE[POS] >= 0x60 && MCSAVE[POS] <= 0x79) { //A - Z
+                    printf("%c", MCSAVE[POS] - 0x1F);
+                }
+                else if (MCSAVE[POS] >= 0x81 && MCSAVE[POS] <= 0x9A) { //a - z
+                    printf("%c", MCSAVE[POS] - 0x20);
+                }
+                else if (MCSAVE[POS] == 0x00) { // null
+                    break;
+                }
+                else {
+                    printf("\n#BUG# Unknown char: 0x82 0x%02X", MCSAVE[POS]);
+                    break;
+                }
+
                 break;
-            }
-            break;
-        case 0x82:
-            POS ++; //skip we only need the lower byte for english
-            if (MCSAVE[POS] >= 0x4F && MCSAVE[POS] <= 0x58) { //0 - 9
-                printf("%c", MCSAVE[POS] - 0x1F);
-            }
-            else if (MCSAVE[POS] >= 0x60 && MCSAVE[POS] <= 0x79) { //A - Z
-                printf("%c", MCSAVE[POS] - 0x1F);
-            }
-            else if (MCSAVE[POS] >= 0x81 && MCSAVE[POS] <= 0x9A) { //a - z
-                printf("%c", MCSAVE[POS] - 0x20);
-            }
-            else if (MCSAVE[POS] == 0x00) { // null
+
+            default:
+                //printf("\n Unknown char: 0x%02X\n", MCSAVE[POS]);
                 break;
-            }
-            else {
-                printf("\n#BUG# Unknown char: 0x82 0x%02X", MCSAVE[POS]);
-                break;
-            }
-            break;
-        default:
-            //printf("\n Unknown char: 0x%02X\n", MCSAVE[POS]);
-            break;
         }
     }
+
     printf("\n");
 
     printf("[0x%04X] Reserved: (should be 0x00) \n", POS);
+
     for (; POS < (BASEPOS + 96); POS ++) {
         if (MCSAVE[POS] == 0x00) {
             //do nothing
@@ -246,9 +270,11 @@ int main(int argc, char *argv[])
 
     printf("[0x%04X] Icon Colour Palette:\n", POS);
     uint8_t j = 0;
+
     for (; POS < (BASEPOS + 128); POS ++) {
         printf("%01X(0x%02X%02X) ", j, MCSAVE[POS], MCSAVE[POS + 1]);
         POS ++, j ++;
+
         if (j == 8) {
             printf("\n");
         }
@@ -261,15 +287,18 @@ int main(int argc, char *argv[])
         print_frame_header();
         printf("Icon Data: (HEX) \n");
         uint16_t tmpPOS = POS;
+
         for (uint8_t i2 = 0; POS < (tmpPOS + 128); POS ++) {
             //printf("(%d) ", POS);
             i2 ++;
             printf("%01X %01X ", MCSAVE[POS] & 0x0F, (MCSAVE[POS] >> 4) & 0x0F);
+
             if (i2 == 8) {
                 printf("\n");
                 i2 = 0;
             }
         }
+
         FRAME ++;
         //tmpPOS += 128;
     }
@@ -279,10 +308,12 @@ int main(int argc, char *argv[])
         END_FRAME = POS + 128;
         print_frame_header();
         printf("Save Data: (HEX) \n");
+
         for (uint8_t i = 0; POS < END_FRAME; POS ++) {
             //printf("(%d) ", POS);
             printf("%02X ", MCSAVE[POS]);
             i ++;
+
             if (i == 32) {
                 printf("\n");
                 i = 0;
