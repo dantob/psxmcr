@@ -1,5 +1,5 @@
-// copyright (c) 2023 Daniel Tobias <dan.g.tob@gmail.com>
-// SPDX-License-Identifier: MPL-2.0-no-copyleft-exception
+// copyright (c) 2026 Daniel Tobias <dan.g.tob@gmail.com>
+// SPDX-License-Identifier: MPL-2.0
 
 #include <stdio.h>
 #include <errno.h>
@@ -27,9 +27,9 @@ uint8_t TYPE = 0;
 void print_copyright(void)
 {
     printf("psxmcr [Built: %s, %s]\n", __DATE__, __TIME__);
-    printf("Copyright (c) 2023 Daniel Tobias <dan.g.tob@gmail.com>\n");
-    printf("License: MPL 2.0 (no copyleft exception)\n");
-    printf("         https://spdx.org/licenses/MPL-2.0-no-copyleft-exception.html\n");
+    printf("Copyright (c) 2026 Daniel Tobias <dan.g.tob@gmail.com>\n");
+    printf("License: MPL 2.0)\n");
+    printf("         https://spdx.org/licenses/MPL-2.0.html\n");
     printf("------------------------------------------------------------\n\n");
 }
 
