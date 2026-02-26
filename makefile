@@ -30,7 +30,7 @@ CFLAGS_64        = -m64 -march=x86-64 -mtune=generic
 CFLAGS_32        = -m32 -march=i386 -mtune=generic
 
 CFLAGS_WARN      = -Wpedantic -Wall -Wextra -Wformat=2 -Wconversion -Wpointer-arith -Wshadow -Wundef -Wdouble-promotion \
-                   -Wstrict-prototypes -Wold-style-definition
+                   -Wstrict-prototypes
 CFLAGS_HIDE      = -Wno-conversion
 
 CFLAGS_DEBUG     = -Og -DDEBUG
